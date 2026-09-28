@@ -1,0 +1,7 @@
+name = "amplified-places-proxy"
+main = "src/index.js"
+compatibility_date = "2026-01-01"
+
+# Secrets (never put these here — set them with wrangler):
+#   wrangler secret put SERPAPI_KEY
+#   wrangler secret put APP_SHARED_SECRET

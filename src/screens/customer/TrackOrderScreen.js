@@ -5,6 +5,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { StatusBar } from 'expo-status-bar';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Badge } from '../../components';
+import GoogleMap from '../../components/GoogleMap';
 import { COLORS, FONTS, SHADOW, RADIUS } from '../../theme';
 
 const STEPS = [
@@ -22,6 +23,11 @@ export default function TrackOrderScreen({ navigation, route }) {
   const [eta, setEta] = useState(18);
   const stepIdx = ORDER.indexOf(order.status||'transit');
   const isActive = ['pending','accepted','pickup','transit'].includes(order.status);
+  const hasCoords = order.pickup_lat && order.pickup_lng && order.dropoff_lat && order.dropoff_lng;
+  const mapMarkers = hasCoords ? [
+    { lat:order.pickup_lat, lng:order.pickup_lng, color:COLORS.green, label:'Pickup' },
+    { lat:order.dropoff_lat, lng:order.dropoff_lng, color:COLORS.red, label:'Dropoff' },
+  ] : [];
 
   useEffect(()=>{
     if(!isActive) return;
@@ -32,18 +38,30 @@ export default function TrackOrderScreen({ navigation, route }) {
   return (
     <View style={{flex:1,backgroundColor:COLORS.bg}}>
       <StatusBar style="light"/>
-      <LinearGradient colors={[COLORS.navy,COLORS.navyMid,'#1a4a7a']} style={styles.mapBg}>
-        <View style={{alignItems:'center',justifyContent:'center',flex:1}}>
-          <View style={{width:2,height:120,backgroundColor:'rgba(255,255,255,0.3)',position:'absolute'}}/>
-          <View style={{position:'absolute',top:40}}><Ionicons name="radio-button-on" size={24} color={COLORS.green}/></View>
-          {isActive&&<View style={{position:'absolute',top:'45%'}}><View style={{width:36,height:36,borderRadius:18,backgroundColor:COLORS.navy,borderWidth:2.5,borderColor:'#fff',alignItems:'center',justifyContent:'center'}}><Ionicons name="bicycle" size={18} color="#fff"/></View></View>}
-          <View style={{position:'absolute',bottom:40}}><Ionicons name="location" size={28} color={COLORS.red}/></View>
-          {isActive&&<View style={{position:'absolute',bottom:16,flexDirection:'row',alignItems:'center',gap:6,backgroundColor:COLORS.navy,paddingHorizontal:14,paddingVertical:8,borderRadius:20}}>
-            <View style={{width:7,height:7,borderRadius:4,backgroundColor:COLORS.green}}/>
-            <Text style={{color:'#fff',fontSize:12,fontWeight:FONTS.bold}}>{Math.round(eta)} min away</Text>
+      {hasCoords ? (
+        <View style={styles.mapBg}>
+          <GoogleMap height="100%" showUserLocation={false} markers={mapMarkers} />
+          {isActive&&<View style={{position:'absolute',bottom:16,left:0,right:0,alignItems:'center'}}>
+            <View style={{flexDirection:'row',alignItems:'center',gap:6,backgroundColor:COLORS.navy,paddingHorizontal:14,paddingVertical:8,borderRadius:20}}>
+              <View style={{width:7,height:7,borderRadius:4,backgroundColor:COLORS.green}}/>
+              <Text style={{color:'#fff',fontSize:12,fontWeight:FONTS.bold}}>{Math.round(eta)} min away</Text>
+            </View>
           </View>}
         </View>
-      </LinearGradient>
+      ) : (
+        <LinearGradient colors={[COLORS.navy,COLORS.navyMid,'#1a4a7a']} style={styles.mapBg}>
+          <View style={{alignItems:'center',justifyContent:'center',flex:1}}>
+            <View style={{width:2,height:120,backgroundColor:'rgba(255,255,255,0.3)',position:'absolute'}}/>
+            <View style={{position:'absolute',top:40}}><Ionicons name="radio-button-on" size={24} color={COLORS.green}/></View>
+            {isActive&&<View style={{position:'absolute',top:'45%'}}><View style={{width:36,height:36,borderRadius:18,backgroundColor:COLORS.navy,borderWidth:2.5,borderColor:'#fff',alignItems:'center',justifyContent:'center'}}><Ionicons name="bicycle" size={18} color="#fff"/></View></View>}
+            <View style={{position:'absolute',bottom:40}}><Ionicons name="location" size={28} color={COLORS.red}/></View>
+            {isActive&&<View style={{position:'absolute',bottom:16,flexDirection:'row',alignItems:'center',gap:6,backgroundColor:COLORS.navy,paddingHorizontal:14,paddingVertical:8,borderRadius:20}}>
+              <View style={{width:7,height:7,borderRadius:4,backgroundColor:COLORS.green}}/>
+              <Text style={{color:'#fff',fontSize:12,fontWeight:FONTS.bold}}>{Math.round(eta)} min away</Text>
+            </View>}
+          </View>
+        </LinearGradient>
+      )}
 
       <TouchableOpacity onPress={()=>navigation.goBack()} style={[styles.backBtn,{top:insets.top+12}]}>
         <Ionicons name="arrow-back" size={20} color={COLORS.navy}/>

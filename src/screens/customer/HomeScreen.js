@@ -5,7 +5,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { StatusBar } from 'expo-status-bar';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useApp } from '../../context/AppContext';
-import LeafletMap from '../../components/LeafletMap';
+import GoogleMap from '../../components/GoogleMap';
 import { COLORS, FONTS, SHADOW } from '../../theme';
 
 const SERVICES = [
@@ -40,9 +40,9 @@ export default function HomeScreen({ navigation }) {
     <View style={styles.container}>
       <StatusBar style="light" />
 
-      {/* Live OpenStreetMap */}
+      {/* Live Google Map */}
       <View style={StyleSheet.absoluteFill}>
-        <LeafletMap height="100%" showUserLocation />
+        <GoogleMap height="100%" showUserLocation />
       </View>
 
       {/* Top gradient */}

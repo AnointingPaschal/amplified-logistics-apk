@@ -6,6 +6,7 @@ import { StatusBar } from 'expo-status-bar';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useApp } from '../../context/AppContext';
 import { Btn } from '../../components';
+import PlacesAutocomplete from '../../components/PlacesAutocomplete';
 import { COLORS, FONTS, RADIUS, SHADOW } from '../../theme';
 
 const LABELS  = {standard:'Standard Order',bulk:'Bulk Order',heavy:'Heavy & Relocation',interstate:'Inter-State'};
@@ -21,7 +22,9 @@ export default function CreateOrderScreen({ navigation, route }) {
   const type   = route.params?.type||'standard';
   const [step,setStep]       = useState(1);
   const [pickup,setPickup]   = useState('');
+  const [pickupCoords,setPickupCoords]   = useState(null);
   const [dropoff,setDropoff] = useState('');
+  const [dropoffCoords,setDropoffCoords] = useState(null);
   const [size,setSize]       = useState('small');
   const [cat,setCat]         = useState(null);
   const [protect,setProtect] = useState('none');
@@ -39,7 +42,13 @@ export default function CreateOrderScreen({ navigation, route }) {
     if (!user) { navigation.navigate('Login'); return; }
     setLoading(true);
     try {
-      const order = await createOrder({ service_type:type, pickup_address:pickup, dropoff_address:dropoff, package_size:size, package_category:cat, protection_tier:protect, dropoff_name:recName, dropoff_phone:recPhone, note:notes, price:total, payment_method:'wallet' });
+      const order = await createOrder({
+        service_type:type,
+        pickup_address:pickup, pickup_lat:pickupCoords?.lat, pickup_lng:pickupCoords?.lng,
+        dropoff_address:dropoff, dropoff_lat:dropoffCoords?.lat, dropoff_lng:dropoffCoords?.lng,
+        package_size:size, package_category:cat, protection_tier:protect,
+        dropoff_name:recName, dropoff_phone:recPhone, note:notes, price:total, payment_method:'wallet',
+      });
       setTrackId(order.tracking_id); setDone(true);
     } catch(e) { showToast(e.message||'Order failed','error'); }
     finally { setLoading(false); }
@@ -89,7 +98,13 @@ export default function CreateOrderScreen({ navigation, route }) {
                 <View style={{width:12,height:12,borderRadius:6,backgroundColor:COLORS.green,marginTop:4,flexShrink:0}}/>
                 <View style={{flex:1}}>
                   <Text style={styles.locLabel}>Pickup Location</Text>
-                  <TextInput value={pickup} onChangeText={setPickup} placeholder="Enter exact pickup address..." placeholderTextColor={COLORS.textLight} style={styles.locInput} multiline/>
+                  <PlacesAutocomplete
+                    value={pickup}
+                    onChangeText={setPickup}
+                    onSelect={(p)=>setPickupCoords(p?.lat?{lat:p.lat,lng:p.lng}:null)}
+                    placeholder="Search pickup address..."
+                    inputStyle={styles.locInput}
+                  />
                 </View>
               </View>
               <View style={{width:1.5,height:20,backgroundColor:COLORS.border,marginLeft:5,borderStyle:'dashed'}}/>
@@ -97,7 +112,13 @@ export default function CreateOrderScreen({ navigation, route }) {
                 <View style={{width:12,height:12,borderRadius:6,backgroundColor:COLORS.red,marginTop:4,flexShrink:0}}/>
                 <View style={{flex:1}}>
                   <Text style={styles.locLabel}>Dropoff Location</Text>
-                  <TextInput value={dropoff} onChangeText={setDropoff} placeholder="Enter exact dropoff address..." placeholderTextColor={COLORS.textLight} style={styles.locInput} multiline/>
+                  <PlacesAutocomplete
+                    value={dropoff}
+                    onChangeText={setDropoff}
+                    onSelect={(p)=>setDropoffCoords(p?.lat?{lat:p.lat,lng:p.lng}:null)}
+                    placeholder="Search dropoff address..."
+                    inputStyle={styles.locInput}
+                  />
                 </View>
               </View>
             </View>
